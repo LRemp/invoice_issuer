@@ -1,3 +1,6 @@
+using invoice_issuer.Features;
+using invoice_issuer.Features.Invoices.Calculate;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,6 +23,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapEndpoints();
 
 app.Run();
