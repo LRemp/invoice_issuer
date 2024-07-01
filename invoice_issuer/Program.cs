@@ -10,6 +10,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+//Register http clients
+builder.Services.AddHttpClients(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
