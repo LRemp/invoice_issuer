@@ -1,5 +1,5 @@
 using invoice_issuer.Features;
-using invoice_issuer.Features.Invoices.Calculate;
+using invoice_issuer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 //Register http clients
 builder.Services.AddHttpClients(builder.Configuration);
+builder.Services.AddServices(builder.Configuration);
 
 var app = builder.Build();
 

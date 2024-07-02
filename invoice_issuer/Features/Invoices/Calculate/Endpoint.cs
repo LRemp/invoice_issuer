@@ -1,4 +1,7 @@
-﻿namespace invoice_issuer.Features.Invoices.Calculate
+﻿using invoice_issuer.Contracts;
+using invoice_issuer.Entities;
+
+namespace invoice_issuer.Features.Invoices.Calculate
 {
     public static class Endpoint
     {
@@ -17,9 +20,78 @@
         /// </summary>
         /// <param name="request">Request object</param>
         /// <returns>Response of calculated invoice</returns>
-        private static async Task<IResult> HandleAsync(Request request)
+        private static async Task<IResult> HandleAsync(Request request, ICountryDataService countryDataService, IVATDataService vatDataService)
         {
-            throw new NotImplementedException();
+            //If service provider is not VAT payer, do not apply VAT tax to the final price
+            if(!request.Merchant.VATpayer)
+            {
+                return Results.Ok(new Response
+                {
+                    Customer = request.Customer,
+                    Merchant = request.Merchant,
+                    Price = request.Price,
+                    VATratio = 0,
+                    TotalPrice = request.Price
+                });
+            }
+
+            //Fetch data of customer and merchant country
+            var customerCountry = await countryDataService.GetCountryData(request.Customer.Country);
+
+            if (customerCountry is null)
+            {
+                return Results.Problem("Customer country not found");
+            }
+
+            var merchantCountry = await countryDataService.GetCountryData(request.Merchant.Country);
+
+            if (merchantCountry is null)
+            {
+                return Results.Problem("Merchant country not found");
+            }
+
+            if (!customerCountry.Region.Equals("Europe"))
+            {
+                return Results.Ok(new Response
+                {
+                    Customer = request.Customer,
+                    Merchant = request.Merchant,
+                    Price = request.Price,
+                    VATratio = 0,
+                    TotalPrice = request.Price
+                });
+            }
+
+            //Fetch data of VAT taxes applied in customer and merchant countries
+            var customerVATdata = await vatDataService.GetCountryVATData(request.Customer.Country, "Standard");
+
+            if(customerVATdata is null)
+            {
+                return Results.Problem("VAT tax data not found");
+            }
+
+            if(customerVATdata.Rates.Count == 0)
+            {
+                return Results.Ok(new Response
+                {
+                    Customer = request.Customer,
+                    Merchant = request.Merchant,
+                    Price = request.Price,
+                    VATratio = 0,
+                    TotalPrice = request.Price
+                });
+            }
+
+            double VATratio =  1.0 + (double)customerVATdata.Rates[0] / 100;
+
+            return Results.Ok(new Response
+            {
+                Customer = request.Customer,
+                Merchant = request.Merchant,
+                Price = request.Price,
+                VATratio = customerVATdata.Rates[0],
+                TotalPrice = request.Price * (decimal)VATratio
+            });
         }
     }
 }
