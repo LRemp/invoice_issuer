@@ -4,6 +4,6 @@ namespace invoice_issuer.Contracts
 {
     public interface IVATDataService
     {
-        public Task<VATCountry?> GetCountryVATData(string countryCode);
+        public Task<Rate?> GetCountryVATData(string countryCode, string type);
     }
 }
