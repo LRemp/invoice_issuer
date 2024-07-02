@@ -6,7 +6,7 @@
         {
             services.AddHttpClient("countryapi", client =>
             {
-                client.BaseAddress = new Uri("https://https://api.first.org");
+                client.BaseAddress = new Uri("https://api.first.org");
             });
 
             services.AddHttpClient("vatapi", client =>
