@@ -19,10 +19,20 @@ namespace invoice_issuer.Services
         /// </summary>
         /// <param name="countryCode">Country code</param>
         /// <returns>Country VAT data</returns>
-        public async Task<VATCountry?> GetCountryVATData(string countryCode)
+        public async Task<Rate?> GetCountryVATData(string countryCode, string type)
         {
             var client = httpClientFactory.CreateClient("vatapi");
-            return await client.GetFromJsonAsync<VATCountry>($"/rates/{countryCode}");
+
+            var response = await client.GetFromJsonAsync<VATCountry>($"/rates/{countryCode}");
+
+            var test = await client.GetAsync($"/rates/{countryCode}");
+
+            if (response is null)
+            {
+                return null;
+            }
+
+            return response.Rates.Where(x => x.Name == type).FirstOrDefault();
         }
     }
 }
