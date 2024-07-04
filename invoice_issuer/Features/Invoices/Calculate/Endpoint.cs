@@ -1,4 +1,5 @@
 ﻿using invoice_issuer.Contracts;
+using invoice_issuer.Domain;
 using invoice_issuer.Entities;
 
 namespace invoice_issuer.Features.Invoices.Calculate
@@ -20,7 +21,7 @@ namespace invoice_issuer.Features.Invoices.Calculate
         /// </summary>
         /// <param name="request">Request object</param>
         /// <returns>Response of calculated invoice</returns>
-        private static async Task<IResult> HandleAsync(Request request, ICountryDataService countryDataService, IVATDataService vatDataService)
+        public static async Task<IResult> HandleAsync(Request request, ICountryDataService countryDataService, IVATDataService vatDataService)
         {
             //If service provider is not VAT payer, do not apply VAT tax to the final price
             if(!request.Merchant.VATpayer)
@@ -40,14 +41,14 @@ namespace invoice_issuer.Features.Invoices.Calculate
 
             if (customerCountry is null)
             {
-                return Results.Problem("Customer country not found");
+                return Results.Problem(DomainErrors.Invoices.CustomerCountryNotFound.Code);
             }
 
             var merchantCountry = await countryDataService.GetCountryData(request.Merchant.Country);
 
             if (merchantCountry is null)
             {
-                return Results.Problem("Merchant country not found");
+                return Results.Problem(DomainErrors.Invoices.MerchantCountryNotFound.Code);
             }
 
             if (!customerCountry.Region.Equals("Europe"))
@@ -67,7 +68,7 @@ namespace invoice_issuer.Features.Invoices.Calculate
 
             if(customerVATdata is null)
             {
-                return Results.Problem("VAT tax data not found");
+                return Results.Problem(DomainErrors.Invoices.VATdataNotFound.Code);
             }
 
             if(customerVATdata.Rates.Count == 0)
